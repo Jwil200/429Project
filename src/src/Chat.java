@@ -2,15 +2,22 @@ package src;
 
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.io.*;
 
 public class Chat {
+	public static final String GREEN = "\033[0;32m";
+	public static final String RESET = "\033[0m";
 	
 	abstract class ServerRunnable implements Runnable {
 		ServerSocket serverSocket;
-		public ServerRunnable(ServerSocket serverSocket) {
+		public ServerRunnable(ServerSocket serverSocket, ArrayList<Connection> connections) {
 			this.serverSocket = serverSocket;
+			@SuppressWarnings("unused")
+			Thread t = new Thread(this);
+			t.start();
 		}
+		public abstract void close ();
 	}
 	
 	private static int PORT = 0;
@@ -20,6 +27,7 @@ public class Chat {
 	
 	// Server
 	private ServerSocket serverSocket;
+	private ServerRunnable serverThread;
 	
 	
 	/**
@@ -28,20 +36,29 @@ public class Chat {
 	public Chat () {
 		connections = new ArrayList<Connection>();
 		try {
+			System.out.println("Here.");
 			serverSocket = new ServerSocket(PORT);
-			
-			Thread t = new Thread(new ServerRunnable (serverSocket) {
-				private Socket serverClientSocket;
+			System.out.println("Here.");
+			serverThread = new ServerRunnable (serverSocket, connections) {
+				private boolean run = true;
+				
 				@Override
 				public void run () {
-					try {
-						serverClientSocket = serverSocket.accept();
-					} catch (IOException e) { }
+					while (run) {
+						try {
+							Socket newClient = serverSocket.accept();
+							System.out.println(GREEN + "Server Connection Established." + RESET);
+							connections.add(new Connection(newClient));
+						} catch (Exception e) { }
+					}
 				}
-			});
-			t.start();
+				
+				public void close () {
+					run = false;
+				}
+			};
 		}
-		catch (Exception e) {}
+		catch (Exception e) { e.printStackTrace(); }
 	}
 	
 	/**
@@ -108,14 +125,45 @@ public class Chat {
 		}
 	}
 	
+	public void terminate (int id) {
+		connections.remove(id).exit();
+	}
+	
+	public void exit () {
+		if (serverThread != null)
+			serverThread.close();
+		while (!connections.isEmpty())
+			connections.remove(0).exit();
+	}
+	
 	public static void main (String args[]) {
 		PORT = new Integer(args[0]); // Always need to setup this var based on args
 		
 		Chat c = new Chat();
 		
-		String s = c.myip();
+		c.myip();
 		c.myport();
 		c.connect("127.0.0.1", PORT);
 		c.list();
+		
+		Scanner sc = new Scanner(System.in);
+		String input = "";
+		
+		while (!input.equals("exit")) {
+			System.out.print("> ");
+			input = sc.nextLine();
+			switch (input) {
+				case "list":
+					c.list();
+					break;
+				case "exit":
+					break;
+				default:
+					System.err.println("Invalid command. Use help for a list of commands.");
+			}
+		}
+		
+		sc.close();
+		c.exit();
 	}
 }
