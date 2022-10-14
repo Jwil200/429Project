@@ -38,6 +38,7 @@ public class PeerHandler implements Runnable {
                         if (!Utils.isInt(args[1])) break;
                         int newPort = new Integer(args[1]);
                         chat.getConnectedPeers().get(chat.getPeer(address, port)).setPort(newPort);
+                        this.port = newPort;
                         break;
                     case "send":
                         if (args.length < 2) break;
@@ -65,6 +66,6 @@ public class PeerHandler implements Runnable {
         try {
             input.close();
         }
-        catch (Exception e) {}
+        catch (Exception e) { e.printStackTrace(); }
     }
 }

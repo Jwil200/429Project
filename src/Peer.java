@@ -49,6 +49,6 @@ public class Peer {
 		try {
 			socket.close();
 		}
-		catch (Exception e) {e.printStackTrace();}
+		catch (Exception e) { e.printStackTrace(); }
 	}
 }

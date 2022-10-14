@@ -152,7 +152,7 @@ public class Chat {
 		return -1;
 	}
 
-	public void terminate(int index) {
+	public void terminate (int index) {
 		if (index >= connectedPeers.size() || index < 0) {
 			System.err.println("Error: Invalid id, use list to see the ids of all available connections.");
 			return;
@@ -167,7 +167,7 @@ public class Chat {
 		connectedPeers.remove(index);
 	}
 
-	public void send(int id, String message) {
+	public void send (int id, String message) {
 		if (message.length() >= 100) {
 			System.err.println("Cannot send a message over 100 characters. Please send a shorter message.");
 			return;
