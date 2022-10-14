@@ -25,7 +25,7 @@ public class Chat {
 		connectedPeers = new ArrayList<Peer>();
 
 		handler = new ServerHandler(this, listenSocket);
-	  
+		
 		// list of all clients (peers) connected to this host
 	}
 
@@ -125,6 +125,7 @@ public class Chat {
 
 		peer = new Peer(this, peerSocket, destinationPort);
 		connectedPeers.add(peer);
+		peer.send("connect " + listenPort);
 	}
 
 	/**

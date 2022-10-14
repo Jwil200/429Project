@@ -33,6 +33,12 @@ public class PeerHandler implements Runnable {
 
                 String[] args = in.split(" ", 2);
                 switch (args[0]) {
+                    case "connect":
+                        if (args.length < 2) break;
+                        if (!Utils.isInt(args[1])) break;
+                        int newPort = new Integer(args[1]);
+                        chat.getConnectedPeers().get(chat.getPeer(address, port)).setPort(newPort);
+                        break;
                     case "send":
                         if (args.length < 2) break;
                         System.out.println("\nMessage recieved from IP: " + address + ":");
@@ -49,7 +55,7 @@ public class PeerHandler implements Runnable {
                 }
             }
             catch (Exception e) {
-                System.err.println("Error: Message dropped.");
+                System.err.println("Error: Message dropped. Status: " + peerSocket.isConnected());
             }
         }
     }

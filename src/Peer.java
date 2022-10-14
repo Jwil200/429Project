@@ -27,6 +27,10 @@ public class Peer {
 		return address;
 	}
 
+	public void setPort (int port) {
+		this.port = port;
+	}
+
 	public int getPort () {
 		return port;
 	}

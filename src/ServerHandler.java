@@ -22,7 +22,7 @@ public class ServerHandler implements Runnable {
                 Socket connectionSocket = listenSocket.accept();
                 chat.getConnectedPeers().add(new Peer(chat, connectionSocket, connectionSocket.getLocalPort()));
                 System.out.println("\nConnected to Peer.");
-                System.out.println(">>>");
+                System.out.print(">>>");
             } catch (Exception e) {}
         }
     }
