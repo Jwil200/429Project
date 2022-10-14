@@ -1,44 +1,50 @@
-
-    
-import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Peer {
 
-    private Integer id;
-	private String host;
+	private String address;
 	private int port;
 	private Socket socket;
+	private PrintWriter output;
+	private PeerHandler handler;
 
-	public Peer(int id, String host, int port) {
-		this.id = id;
-        this.host = host;
-		this.port = port;
+	public Peer(Chat chat, Socket socket) {
+		this.address = socket.getLocalAddress().getHostAddress();
+		this.port = socket.getLocalPort();
+		this.socket = socket;
 
 		try {
-			socket = new Socket(host, port);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			output = new PrintWriter(this.socket.getOutputStream(), true);
+			handler = new PeerHandler(chat, this.socket, address, port);
+		} 
+		catch (Exception e) {
+			System.err.println("Error: Address or Port for connection was invalid.");
 		}
 	}
 
-    public Integer getId() {
-		return id;
+	public String getAddress () {
+		return address;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
-	public int getPort() {
+	public int getPort () {
 		return port;
 	}
 
-	public Socket getSocket() {
+	public Socket getSocket () {
 		return socket;
 	}
 
+	public void send (String message) {
+		output.println(message);
+	}
+
+	public void close () {
+		handler.close();
+		output.close();
+		try {
+			socket.close();
+		}
+		catch (Exception e) {e.printStackTrace();}
+	}
 }

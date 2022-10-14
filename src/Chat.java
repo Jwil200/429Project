@@ -1,233 +1,107 @@
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-
+import java.util.Scanner;
 
 public class Chat {
-	
+	public static final int[] DEFAULT_PORTS = {5000, 4554, 4000}; // The default ports used by this program when none are provided.
+	private static final int MAX_CONNECTIONS = 5;
+	private static final int MAX_ATTEMPTS = 4;
 
-	List<Peer> connectedPeers;
-	Integer listenPort;
-	String myIP;
-	ServerSocket listenSocket;
-	private final int MAX_CONNECTIONS = 3;
-	BufferedReader input;
-	private Map<Peer, DataOutputStream> peerOutputMap;
-	
-	
-	Integer id;
+	private List<Peer> connectedPeers;
+	private Integer listenPort;
+	private ServerSocket listenSocket;
+	private ServerHandler handler;
 
-	public Chat() throws IOException {
-	    
-		
-	   myIP = Inet4Address.getLocalHost().getHostAddress();
-	  
-		// list of all clients (peers) connected to this host
+	/**
+	* Constructs an instance of the Chat client. 
+	*/
+	public Chat (int port) throws IOException {
+		listenPort = port;
+		listenSocket = new ServerSocket(port);
 		connectedPeers = new ArrayList<Peer>();
 
-		input = new BufferedReader(new InputStreamReader(System.in));
-
-		// map a peer to an output stream
-		peerOutputMap = new HashMap<Peer, DataOutputStream>();
+		handler = new ServerHandler(this, listenSocket);
+	  
+		// list of all clients (peers) connected to this host
 	}
 
-    public void Help() {
-		for (int i = 0; i < 40; i++)
-			System.out.print("-"); 
-		System.out.println("\nchat <port number>\t Run program");
-		System.out.println("\nhelp\t Display commands");
-		System.out.println("\nmyip\t Display IP address");
-		System.out.println("\nmyport\t Display the port on which this process is listening for incoming connections");
-		System.out.println("\nconnect\t <destination> <port no> This command connect to another peer");
-		System.out.println("\nlist\t Display a list of all the peers you are connected to");
-		System.out.println("\nterminate <connection id>\t Terminate the connection ");
-		System.out.println("\nsend <connection id.> <message>\t Send a message to a peer");
-		System.out.println("\nexit\t Close all connections and terminate this process.");
-		for (int i = 0; i < 40; i++)
-			System.out.print("-"); 
-		System.out.println("\n");
+	public List<Peer> getConnectedPeers () {
+		return connectedPeers;
 	}
 
-	public void Start(String choice) throws IOException {
-		int port = Integer.valueOf(choice.split(" ")[1]);
-		
+    public void help () {
+		System.out.printf("%-40s%-20s\n", "Command", "Description");
+		System.out.println(new String(new char[130]).replace("\0", "-")); // Creates line of dashes
+		for (String command: Utils.commandList.keySet()) {
+			System.out.printf("%-40s%-20s\n", command, Utils.commandList.get(command));
+		}
+	}
+
+	private String ip() {
 		try {
-			listenSocket = new ServerSocket(port);
-		} catch (Exception e){
-			System.out.println("Error reading port number");
+			return Inet4Address.getLocalHost().getHostAddress();
 		}
-
-		if (listenSocket != null) {
-			listenPort = listenSocket.getLocalPort();
-			myIP = Inet4Address.getLocalHost().getHostAddress();
-			startServer();
+		catch (Exception e) {
+			return "127.0.0.0"; // On a failure to get post local host.
 		}
 	}
 
-	private void startServer() throws IOException {
-
-		//  each peer on a separate thread
-		new Thread(() -> {
-			while (true) {
-				try {
-					// wait for a peer to connect
-					Socket connectionSocket = listenSocket.accept();
-
-					// once there is a connection, serve them on thread
-					new Thread(new PeerHandler(connectionSocket)).start();
-
-				} catch (IOException e) {
-					
-				}
-			}
-		}).start();
+	/**
+	* Gets the public address of the current Chat instance.
+	* This contacts the address specified in CHECK_IP_URL
+	* to get the public address.
+	* <p>
+	* Will print this to the chat or "Cannot retrieve IP." 
+	* if unable to.
+	*
+	* @return 		String containing the public address of the client.
+	*/
+	public void myip () {
+		String ip = ip();
+		if (ip.equals("127.0.0.0")) {
+			System.err.println("Error: Host name cannot be resolved to an address.\nPlease check your internet connection and try again.");
+			return;
+		}
+		System.out.println("IP Address: " + ip());
 	}
 
-	// open an IO stream for each peer connected to the host
-	
-	private class PeerHandler implements Runnable {
-		
-		private Socket peerSocket;
-		Integer porT;
-		String iP;
-		public PeerHandler(Socket socket) {
-			this.peerSocket = socket;
-		}
-
-		public void run() {
-			
-			try {
-				BufferedReader input = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
-				//BufferedReader input1 = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
-				
-				
-				
-				while (true) {
-					String Str = input.readLine();
-					
-
-					
-					if (Str == null) {
-						return;
-					}
-					
-
-					String type =  Str.split(" ")[0];
-					
-					if(type.equals("connect")){
-					iP = Str.split(" ")[1];
-					 porT = Integer.valueOf(Str.split(" ")[2]);
-					} 
-
-					
-					
-					
-					
-					
-
-						
-					switch(type){
-						case "connect":
-						
-							PrintConnectSuccess(Str);
-							break;
-				
-						case"send":
-
-							PrintMessage(iP,porT,Str);
-							break;
-							
-
-
-						case"terminate":
-						 TerminateMessage(iP,porT); 
-							
-						
-
-						//terminate conection
-						terminateConnection(findPeer(iP, porT));
-						
-						//remove from list
-						removePeer(findPeer(iP, porT));
-						input.close();	
-							return;
-					
-					
-					
-
-					}
-
-
-					
-				}
-			} catch (IOException e) {
-				System.out.println("Message: Connection drop");
-			}
-		}
-	}
-
-	private void terminateConnection(Peer peer) {
-		try {
-			peer.getSocket().close();
-			peerOutputMap.get(peer).close();
-		} catch (IOException e) {
-			
-		}
-	}
-
-	private void removePeer(Peer peer) {
-		connectedPeers.remove(peer);
-		peerOutputMap.remove(peer);
+	/**
+	* Prints the port specified upon running the program.
+	*/
+	public void myport () {
+		System.out.println("Listening on port: " + listenPort);
 	}
 
 	private Peer findPeer( String ip, int port) {
 		for (Peer p : connectedPeers)
-			if ( p.getHost().equals(ip) && p.getPort() == port)
+			if ( p.getAddress().equals(ip) && p.getPort() == port)
 				return p;
 		return null;
 	}
 
-	public void List() {
-		if (connectedPeers.isEmpty())
-			System.out.println("No peers connected.");
-		else {
-			System.out.println("id:   IP Address     Port No.");
-			for (int i = 0; i < connectedPeers.size(); i++) {
-				Peer peer = connectedPeers.get(i);
-				System.out.println(peer.getId() +"    " + peer.getHost() + "     " + peer.getPort());
-			}
-			System.out.println("Total Peers: " + connectedPeers.size());
-		}
-	}
-
-	public void Connect(String userInput) throws IOException {
-		String[] args = userInput.split(" ");
-		String ip;
-		int port;
-
-
-		ip = args[1];
-		port = Integer.valueOf(args[2]);
-
+	/**
+	* Opens a TCP connection with a specified client.
+	* If there are any issues pushes an error to the chat.
+	* <p>
+	* The connection is stored in an ArrayList for later use.
+	*
+	* @param  destination  a String containing the ip address of the other client
+	* @param  destinationPort an int containing the port to connect to for the client
+	*/
+	public void connect(String destination, int destinationPort) {
 		// check if connection limited is exceeded
 		if (connectedPeers.size() >= MAX_CONNECTIONS) {
-			System.out.println("connect fail: max connection");
+			System.out.println("Error: Connect fail, max connections reached.\nTerminate one or more connections to continue.");
 			return;
 		}
 
 		// check for self/duplicate connections
-		if (!DuplicateConnection(ip, port)) {
-			System.out.println("connect fail: no self or duplicate connection");
+		if ((destination.equals(ip()) && listenPort == destinationPort) || findPeer(destination, destinationPort) != null) {
+			System.out.println("Error: Connect fail, cannot connect to same ip and port as running host.");
 			return;
 		}
 
@@ -237,165 +111,163 @@ public class Chat {
 		Peer peer;
 
 		// try to connect but will stop after MAX_ATTEMPTS
+		int attempts = 0;
 		do {
 			try {
-				peerSocket = new Socket(ip, port);
+				peerSocket = new Socket(destination, destinationPort);
 			} catch (IOException e) {
-
-				System.out.println("connection failed");
-				
+				System.out.println("Error: Connection failed, trying again.");
 			}
-		} while (peerSocket == null );
+		} while (peerSocket == null && ++attempts < MAX_ATTEMPTS);
+		if (attempts == MAX_ATTEMPTS) return;
 
-		
-			System.out.println("The connection to peer " + ip + " is successfully established");
-			if (connectedPeers.isEmpty()){
-				id=1;
-				 peer = new Peer(id,ip, port);
-				connectedPeers.add(peer);
-			}
+		System.out.println("The connection to peer " + destination + ":" + destinationPort + " is successfully established.");
 
-			else{
-				id = connectedPeers.size()+1;
-				 peer = new Peer(id,ip, port);
-				connectedPeers.add(peer);
-			}
-			// map this peer to an output stream
-			peerOutputMap.put(peer, new DataOutputStream(peerSocket.getOutputStream()));
+		peer = new Peer(this, peerSocket);
+		connectedPeers.add(peer);
+	}
 
-			// tell the peer your host address and port number
-			// tell the peer to connect to you
-			sendMessage(peer,"connect " + myIP +" "+ listenPort);
-			
-
-		}
-
-		public boolean DuplicateConnection(String ip, int port) {
-			return !SelfConnection(ip, port) && UniquePeer(ip, port);
-		}
-	
-		private boolean SelfConnection(String ip, int port) {
-			return ip.equals(myIP) && listenPort == port;
-		}
-
-		private boolean UniquePeer(String ip, int port) {
-			return findPeer(ip, port) == null;
-		}
-
-	private void sendMessage(Peer peer, String Str) {
-		try {
-			// "\r\n" so when readLine() is called,
-			// it knows when to stop reading
-			peerOutputMap.get(peer).writeBytes(Str + "\r\n");
-
-		} catch (Exception e) {
-			System.out.println(e);
+	/**
+	* Takes the current list of connections from
+	* the ArrayList and prints them into a neat table
+	* showing the num, ip, and port.
+	*/
+	public void list() {
+		System.out.printf("%-6s%-20s%-10s%n", "id:", "IP Address", "Port No.");
+		int i = 1;
+		for (Peer p: connectedPeers) {
+			System.out.printf("%-6s%-20s%-10d%n", i + ":", p.getAddress(), p.getPort());
+			i++;
 		}
 	}
 
-	public void PrintConnectSuccess(String Str) throws IOException{
-		//int id = Integer.valueOf(Str.split(" ")[1]);
-		String ip = Str.split(" ")[1];
-		int port = Integer.valueOf(Str.split(" ")[2]);
-		System.out.println("\nThe connection to peer " + ip + " is successfully established");
-		System.out.print(">>> ");
-		// save peer's info, used for a lot of other stuff
-		Peer peer;
-		if (connectedPeers.isEmpty()){
-			id=1;
-			 peer = new Peer(id,ip, port);
-			connectedPeers.add(peer);
+	public int getPeer(String address, int port) {
+		int i = 0;
+		for (Peer p: connectedPeers) {
+			if (p.getAddress().equals(address) && p.getPort() == port)
+				return i;
+			i++;
 		}
-
-		else{
-			id = connectedPeers.size()+1;
-			 peer = new Peer(id,ip, port);
-			connectedPeers.add(peer);
-		}
-		
-		peerOutputMap.put(peer, new DataOutputStream(peer.getSocket().getOutputStream()));
-
-
+		return -1;
 	}
 
-	public void Send(String userInput) {
-		String[] args = userInput.split(" ");
-		if (args.length >= 3) {
-			try {
-				int id = Integer.valueOf(args[1])-1;
-				
-				String Str = "";
-					for (int i = 0; i < args.length; i++){
-						Str += args[i] + " ";
-					}
-					sendMessage(connectedPeers.get(id), Str);
-				
-			} catch (NumberFormatException e) {
-				System.out.println("Error: Second argument should be a integer.");
-			}
-		} else {
-			System.out.println("Error: Invalid format for 'send' command. See 'help' for details.");
+	public void terminate(int index) {
+		if (index >= connectedPeers.size() || index < 0) {
+			System.err.println("Error: Invalid id, use list to see the ids of all available connections.");
+			return;
 		}
+
+		Peer peer = connectedPeers.get(index);
+
+		connectedPeers.get(index).send("terminate");
+		System.out.println("You dropped peer [ip: " + peer.getAddress() + " port: " + peer.getPort() + "]");
+
+		connectedPeers.get(index).close();
+		connectedPeers.remove(index);
 	}
 
-	private void PrintMessage(String ip, Integer port,String Str) {
-		String msg="";
-		String[] args = Str.split(" ");
-		//int id = Integer.valueOf(args[1]);
-		for (int i = 2; i < args.length; i++){
-			msg += args[i] + " ";
-			}
-			
-		System.out.println("\nMessage received from IP: " + ip +" :");
-		System.out.println("Message: " + msg);
-
-		
-		System.out.print(">>> ");
+	public void send(int id, String message) {
+		if (message.length() >= 100) {
+			System.err.println("Cannot send a message over 100 characters. Please send a shorter message.");
+			return;
+		}
+		message = "send " + message; // Issue command as send.
+		connectedPeers.get(id - 1).send(message);
 	}
 
-	public void Terminate(String userInput) {
-		String[] args = userInput.split(" ");
-		if (args.length == 2) {
-			try {
-				int id = Integer.valueOf(args[1]) - 1;
-				if (id >= 0 && id <connectedPeers.size()) {
-					// notify peer that connection will be drop
-					Peer peer = connectedPeers.get(id);
-					sendMessage(peer, "terminate "+ id+" "  + myIP +" "+ listenPort);
-					System.out.println("You dropped peer [ip: " + peer.getHost() + " port: " + peer.getPort() + "]");
-					try {
-						peer.getSocket().close();
-					} catch (IOException e1) {
-						
-						e1.printStackTrace();
-					}
-					try {
-						peerOutputMap.get(peer).close();
-					} catch (IOException e) {
-						
-						e.printStackTrace();
-					}
-					//remove Peer
-					connectedPeers.remove(peer);
-					peerOutputMap.remove(peer);
-				} else {
-					System.out.println("Error: Please select a valid peer id from the list command.");
+	public void exit () {
+		// Terminate all connections.
+		while (connectedPeers.size() > 0)
+			terminate(0);
+		handler.close();
+		System.out.println("Terminated all connections and closed server.");
+	}
+
+	public static void main (String[] args) {
+		int server_port = 0;
+
+		if (args.length == 0) {
+			for (int port: DEFAULT_PORTS) {
+				if (Utils.portAvailable(port)) {
+					server_port = port;
+					break;
 				}
-			} catch (NumberFormatException e) {
-				System.out.println("Error: Second argument should be a integer.");
 			}
-		} else {
-			System.out.println("Error: Invalid format for 'terminate' command. See 'help' for details.");
+		}
+		else {
+			server_port = new Integer(args[0]);
+		}
+		
+		Chat chat = null;
+		try {
+			chat = new Chat(server_port);
+		}
+		catch (Exception e) {
+			System.err.println("Error: Issue binding server port to port: " + server_port
+								+ "\nPlease try again or with a different port.");
+			return;
+		}
+		
+		Scanner in = new Scanner(System.in);
+		String input = "";
+		
+		while (!input.equals("exit")) {
+			System.out.print(">>>");
+			input = in.nextLine();
+			String command = (input.indexOf(" ") > -1) ? input.split(" ")[0] : input;
+			String[] cmdArgs;
+			
+			switch (command) {
+				case "help":
+					chat.help();
+					break;
+				case "myip":
+					chat.myip();
+					break;
+				case "myport":
+					chat.myport();
+					break;
+				case "connect":
+					cmdArgs = input.split(" ", 3);
+					if (cmdArgs.length < 3) {
+						System.err.println("Error: Invalid number of arguments for connect.");
+						break;
+					}
+					if (!Utils.isInt(cmdArgs[2])) {
+						System.err.println("Error: Invalid port input. Please enter a number.");
+						break;
+					}
+					chat.connect(cmdArgs[1], new Integer(cmdArgs[2]));
+					break;
+				case "list":
+					chat.list();
+					break;
+				case "terminate":
+					cmdArgs = input.split(" ", 2);
+					if (!Utils.isInt(cmdArgs[1])) {
+						System.err.println("Error: Invalid input, the id must be a number.");
+						break;
+					}
+					chat.terminate(new Integer(cmdArgs[1]) - 1);
+					break;
+				case "send":
+				cmdArgs = input.split(" ", 3);
+					if (!Utils.isInt(cmdArgs[1])) {
+						System.err.println("Error: Invalid input, the id must be a number.");
+						break;
+					}
+					chat.send(new Integer(cmdArgs[1]), cmdArgs[2]);
+					break;
+				case "exit":
+					chat.exit();
+					in.close();
+					break;
+				default:
+					System.err.println("Error: Invalid command. For a list of commands use 'help'.");
+			}
 		}
 
-}
-
-private void TerminateMessage(String ip,Integer port) {
-	System.out.println();
-	System.out.println("Peer [ " + ip +  " ] terminates the connection");
-	System.out.print(">>> ");
-}
+		in.close();
+	}
 
 }
-    
-
