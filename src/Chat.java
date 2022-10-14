@@ -123,7 +123,7 @@ public class Chat {
 
 		System.out.println("The connection to peer " + destination + ":" + destinationPort + " is successfully established.");
 
-		peer = new Peer(this, peerSocket);
+		peer = new Peer(this, peerSocket, destinationPort);
 		connectedPeers.add(peer);
 	}
 

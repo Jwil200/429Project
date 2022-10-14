@@ -9,9 +9,9 @@ public class Peer {
 	private PrintWriter output;
 	private PeerHandler handler;
 
-	public Peer(Chat chat, Socket socket) {
+	public Peer(Chat chat, Socket socket, int port) {
 		this.address = socket.getLocalAddress().getHostAddress();
-		this.port = socket.getLocalPort();
+		this.port = port;
 		this.socket = socket;
 
 		try {
