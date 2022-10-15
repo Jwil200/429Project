@@ -27,15 +27,35 @@ public class Chat {
 		connectedPeers = new ArrayList<Peer>();
 
 		handler = new ServerHandler(this, listenSocket);
-		
-		// list of all clients (peers) connected to this host
 	}
 
+	/**
+	* Returns the list of peer connections.
+	* 
+	* @return  a List<Peer> of all connected peers
+	*/
 	public List<Peer> getConnectedPeers () {
 		return connectedPeers;
 	}
 
-    public void help () {
+	/**
+	* Searches through the peer list for any matching the
+	* given ip and port number, returning that peer if
+	* it is found.
+	* 
+	* @param  ip  a String of the ip address of the peer
+	* @param  port  an int containing the port number of the peer
+	* 
+	* @return  a Peer object of the given peer, or null if none match
+	*/
+	private Peer findPeer(String ip, int port) {
+		for (Peer p : connectedPeers)
+			if ( p.getAddress().equals(ip) && p.getPort() == port)
+				return p;
+		return null;
+	}
+
+	public void help () {
 		System.out.printf("%-40s%-20s\n", "Command", "Description");
 		System.out.println(new String(new char[130]).replace("\0", "-")); // Creates line of dashes
 		for (String command: Utils.commandList.keySet()) {
@@ -78,13 +98,6 @@ public class Chat {
 		System.out.println("The program runs on port number: " + listenPort);
 	}
 
-	private Peer findPeer( String ip, int port) {
-		for (Peer p : connectedPeers)
-			if ( p.getAddress().equals(ip) && p.getPort() == port)
-				return p;
-		return null;
-	}
-
 	/**
 	* Opens a TCP connection with a specified client.
 	* If there are any issues pushes an error to the chat.
@@ -116,18 +129,20 @@ public class Chat {
 		int attempts = 0;
 		do {
 			try {
-				peerSocket = new Socket(destination, destinationPort);
+				peerSocket = new Socket(destination, destinationPort, Inet4Address.getLocalHost(), (int)listenPort);
 			} catch (IOException e) {
-				System.out.println("Error: Connection failed, trying again.");
+				System.err.println("Error: Connection failed, trying again.");
 			}
 		} while (peerSocket == null && ++attempts < MAX_ATTEMPTS);
-		if (attempts == MAX_ATTEMPTS) return;
+		if (attempts == MAX_ATTEMPTS) {
+			System.err.println("Error: Could not connect. Either the IP or Port is invalid or there is something wrong with your connection.");
+			return;
+		}
 
 		System.out.println("The connection to peer " + destination + ":" + destinationPort + " is successfully established.");
 
-		peer = new Peer(this, peerSocket, destinationPort);
+		peer = new Peer(this, peerSocket, false);
 		connectedPeers.add(peer);
-		peer.send("connect " + ip() + " " + listenPort);
 	}
 
 	/**

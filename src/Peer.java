@@ -9,9 +9,25 @@ public class Peer {
 	private PrintWriter output;
 	private PeerHandler handler;
 
-	public Peer(Chat chat, Socket socket, int port) {
-		this.address = socket.getLocalAddress().getHostAddress();
-		this.port = port;
+	/**
+	* The Peer stores information regarding a peer connection,
+	* such as its socket, address, and port. The address and port
+	* will always point to the opposite connection's address and
+	* open service port.
+	*
+	* @param  chat  a Chat object to reference to the chat service
+	* @param  socket  a Socket this peer is connected through
+	* @param  boolean  a boolean indicating if this Peer is established through the ServerHandler
+	*/
+	public Peer(Chat chat, Socket socket, boolean fromServer) {
+		if (fromServer) {
+			address = socket.getRemoteSocketAddress().toString();
+			port = socket.getPort();
+		}
+		else {
+			address = socket.getLocalAddress().toString();
+			port = socket.getLocalPort();
+		}
 		this.socket = socket;
 
 		try {
