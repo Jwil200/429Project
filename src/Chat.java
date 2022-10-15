@@ -129,7 +129,7 @@ public class Chat {
 		int attempts = 0;
 		do {
 			try {
-				peerSocket = new Socket(destination, destinationPort, Inet4Address.getLocalHost(), listenPort);
+				peerSocket = new Socket(destination, destinationPort);
 			} catch (IOException e) {
 				System.err.println("Error: Connection failed, trying again.");
 				e.printStackTrace();
