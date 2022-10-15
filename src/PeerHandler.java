@@ -29,9 +29,10 @@ public class PeerHandler implements Runnable {
                 String in = input.readLine();
                 if (in == null) continue;
 
-                String[] args = in.split(" ", 3);
+                String[] args = in.split(" ", 2);
                 switch (args[0]) {
                     case "connect":
+                        args = in.split(" ", 3);
                         if (args.length != 3) break;
                         if (!Utils.isInt(args[2])) break;
                         peer.setAddress(args[1]);
