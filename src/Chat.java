@@ -167,13 +167,19 @@ public class Chat {
 		connectedPeers.remove(index);
 	}
 
-	public void send (int id, String message) {
+	public void send (int index, String message) {
+		if (index >= connectedPeers.size() || index < 0) {
+			System.err.println("Error: Invalid id, use list to see the ids of all available connections.");
+			return;
+		}
+
 		if (message.length() >= 100) {
 			System.err.println("Cannot send a message over 100 characters. Please send a shorter message.");
 			return;
 		}
+
 		message = "send " + message; // Issue command as send.
-		connectedPeers.get(id - 1).send(message);
+		connectedPeers.get(index).send(message);
 	}
 
 	public void exit () {
@@ -257,7 +263,7 @@ public class Chat {
 						System.err.println("Error: Invalid input, the id must be a number.");
 						break;
 					}
-					chat.send(new Integer(cmdArgs[1]), cmdArgs[2]);
+					chat.send(new Integer(cmdArgs[1]) - 1, cmdArgs[2]);
 					break;
 				case "exit":
 					chat.exit();
