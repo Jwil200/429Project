@@ -12,7 +12,7 @@ public class Chat {
 	private static final int MAX_ATTEMPTS = 4;
 
 	private List<Peer> connectedPeers;
-	private Integer listenPort;
+	Integer listenPort;
 	private ServerSocket listenSocket;
 	private ServerHandler handler;
 
@@ -66,14 +66,14 @@ public class Chat {
 			System.err.println("Error: Host name cannot be resolved to an address.\nPlease check your internet connection and try again.");
 			return;
 		}
-		System.out.println("IP Address: " + ip());
+		System.out.println("The IP Address is: " + ip());
 	}
 
 	/**
 	* Prints the port specified upon running the program.
 	*/
 	public void myport () {
-		System.out.println("Listening on port: " + listenPort);
+		System.out.println("The program runs on port number: " + listenPort);
 	}
 
 	private Peer findPeer( String ip, int port) {
@@ -130,15 +130,19 @@ public class Chat {
 
 	/**
 	* Takes the current list of connections from
-	* the ArrayList and prints them into a neat table
-	* showing the num, ip, and port.
+	* the ArrayList and prints them into a table
+	* showing the id, ip, and port.
 	*/
 	public void list() {
-		System.out.printf("%-6s%-20s%-10s%n", "id:", "IP Address", "Port No.");
-		int i = 1;
-		for (Peer p: connectedPeers) {
-			System.out.printf("%-6s%-20s%-10d%n", i + ":", p.getAddress(), p.getPort());
-			i++;
+		if (connectedPeers.isEmpty())
+			System.out.println("No peers connected.");
+		else {
+			System.out.printf("%-6s%-20s%-10s%n", "id:", "IP Address", "Port No.");
+			int i = 1;
+			for (Peer p: connectedPeers) {
+				System.out.printf("%-6s%-20s%-10d%n", i + ":", p.getAddress(), p.getPort());
+				i++;
+			}
 		}
 	}
 
@@ -202,7 +206,7 @@ public class Chat {
 			}
 		}
 		else {
-			server_port = new Integer(args[0]);
+			server_port = Integer.valueOf(args[0]);
 		}
 		
 		Chat chat = null;
@@ -244,26 +248,36 @@ public class Chat {
 						System.err.println("Error: Invalid port input. Please enter a number.");
 						break;
 					}
-					chat.connect(cmdArgs[1], new Integer(cmdArgs[2]));
+					chat.connect(cmdArgs[1], Integer.valueOf(cmdArgs[2]));
 					break;
 				case "list":
 					chat.list();
 					break;
 				case "terminate":
 					cmdArgs = input.split(" ", 2);
+					if (cmdArgs.length != 2) {
+						System.err.println("Error: Invalid number of inputs. Use help for more information on using terminate.");
+						break;
+					}
 					if (!Utils.isInt(cmdArgs[1])) {
 						System.err.println("Error: Invalid input, the id must be a number.");
 						break;
 					}
-					chat.terminate(new Integer(cmdArgs[1]) - 1);
+					else {
+						chat.terminate(Integer.valueOf(cmdArgs[1]) - 1);
+					}
 					break;
 				case "send":
-				cmdArgs = input.split(" ", 3);
+					cmdArgs = input.split(" ", 3);
+					if (cmdArgs.length != 3) {
+						System.err.println("Error: Invalid number of inputs. Use help for more information on using send.");
+						break;
+					}
 					if (!Utils.isInt(cmdArgs[1])) {
 						System.err.println("Error: Invalid input, the id must be a number.");
 						break;
 					}
-					chat.send(new Integer(cmdArgs[1]) - 1, cmdArgs[2]);
+					chat.send(Integer.valueOf(cmdArgs[1]) - 1, cmdArgs[2]);
 					break;
 				case "exit":
 					chat.exit();

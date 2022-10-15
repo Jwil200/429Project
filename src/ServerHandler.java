@@ -21,8 +21,6 @@ public class ServerHandler implements Runnable {
             try {
                 Socket connectionSocket = listenSocket.accept();
                 chat.getConnectedPeers().add(new Peer(chat, connectionSocket, connectionSocket.getLocalPort()));
-                System.out.println("\nConnected to Peer.");
-                System.out.print(">>>");
             } catch (Exception e) {}
         }
     }

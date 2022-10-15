@@ -36,9 +36,11 @@ public class PeerHandler implements Runnable {
                     case "connect":
                         if (args.length < 2) break;
                         if (!Utils.isInt(args[1])) break;
-                        int newPort = new Integer(args[1]);
+                        int newPort = Integer.valueOf(args[1]);
                         chat.getConnectedPeers().get(chat.getPeer(address, port)).setPort(newPort);
                         this.port = newPort;
+                        System.out.println("\nThe connection to peer " + address + ":" + port + " is successfully established.");
+                        System.out.print(">>>");
                         break;
                     case "send":
                         if (args.length < 2) break;
@@ -49,7 +51,7 @@ public class PeerHandler implements Runnable {
                     case "terminate":
                         chat.getConnectedPeers().remove(chat.getPeer(address, port));
                         close();
-                        System.out.println("\nClosed connection with IP: " + address);
+                        System.out.println("\nPeer " + address + " terminates the connection");
                         System.out.print(">>>");
                         break;
                     default: // None
