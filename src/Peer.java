@@ -16,11 +16,15 @@ public class Peer {
 
 		try {
 			output = new PrintWriter(this.socket.getOutputStream(), true);
-			handler = new PeerHandler(chat, this.socket, address, port);
+			handler = new PeerHandler(chat, this, this.socket);
 		} 
 		catch (Exception e) {
 			System.err.println("Error: Address or Port for connection was invalid.");
 		}
+	}
+
+	public void setAddress (String address) {
+		this.address = address;
 	}
 
 	public String getAddress () {

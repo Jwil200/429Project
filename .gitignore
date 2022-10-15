@@ -1,0 +1,5 @@
+# bin unnecessary to final build
+bin/
+
+# class files generated locally only
+*.class

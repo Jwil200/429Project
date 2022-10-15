@@ -17,7 +17,9 @@ public class Chat {
 	private ServerHandler handler;
 
 	/**
-	* Constructs an instance of the Chat client. 
+	* Constructs an instance of the Chat client
+	* on the given port number.
+	* @param  port  an int containing the port number to open on
 	*/
 	public Chat (int port) throws IOException {
 		listenPort = port;
@@ -125,7 +127,7 @@ public class Chat {
 
 		peer = new Peer(this, peerSocket, destinationPort);
 		connectedPeers.add(peer);
-		peer.send("connect " + listenPort);
+		peer.send("connect " + ip() + " " + listenPort);
 	}
 
 	/**
@@ -221,6 +223,8 @@ public class Chat {
 		
 		Scanner in = new Scanner(System.in);
 		String input = "";
+
+		System.out.println("Welcome to the chat program. When you see >>> you may enter a command.\nUse command help for a list of commands.");
 		
 		while (!input.equals("exit")) {
 			System.out.print(">>>");
