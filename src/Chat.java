@@ -12,7 +12,7 @@ public class Chat {
 	private static final int MAX_ATTEMPTS = 4;
 
 	private List<Peer> connectedPeers;
-	Integer listenPort;
+	private Integer listenPort;
 	private ServerSocket listenSocket;
 	private ServerHandler handler;
 

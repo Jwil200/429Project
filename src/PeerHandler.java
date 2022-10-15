@@ -54,7 +54,7 @@ public class PeerHandler implements Runnable {
                         System.out.println("\nPeer " + address + " terminates the connection");
                         System.out.print(">>>");
                         break;
-                    default: // None
+                    default: // Ignore unknown command.
                 }
             }
             catch (Exception e) {
