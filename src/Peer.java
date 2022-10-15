@@ -19,15 +19,9 @@ public class Peer {
 	* @param  socket  a Socket this peer is connected through
 	* @param  boolean  a boolean indicating if this Peer is established through the ServerHandler
 	*/
-	public Peer(Chat chat, Socket socket, boolean fromServer) {
-		if (fromServer) {
-			address = socket.getRemoteSocketAddress().toString();
-			port = socket.getPort();
-		}
-		else {
-			address = socket.getLocalAddress().toString();
-			port = socket.getLocalPort();
-		}
+	public Peer(Chat chat, Socket socket) {
+		address = socket.getLocalAddress().toString().replace("/", "");
+		port = socket.getLocalPort();
 		this.socket = socket;
 
 		try {

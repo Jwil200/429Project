@@ -129,9 +129,10 @@ public class Chat {
 		int attempts = 0;
 		do {
 			try {
-				peerSocket = new Socket(destination, destinationPort, Inet4Address.getLocalHost(), (int)listenPort);
+				peerSocket = new Socket(destination, destinationPort, Inet4Address.getLocalHost(), listenPort);
 			} catch (IOException e) {
 				System.err.println("Error: Connection failed, trying again.");
+				e.printStackTrace();
 			}
 		} while (peerSocket == null && ++attempts < MAX_ATTEMPTS);
 		if (attempts == MAX_ATTEMPTS) {
@@ -141,8 +142,9 @@ public class Chat {
 
 		System.out.println("The connection to peer " + destination + ":" + destinationPort + " is successfully established.");
 
-		peer = new Peer(this, peerSocket, false);
+		peer = new Peer(this, peerSocket);
 		connectedPeers.add(peer);
+		peer.send("connect " + ip() + " " + listenPort);
 	}
 
 	/**

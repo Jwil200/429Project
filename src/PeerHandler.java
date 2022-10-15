@@ -29,8 +29,16 @@ public class PeerHandler implements Runnable {
                 String in = input.readLine();
                 if (in == null) continue;
 
-                String[] args = in.split(" ", 2);
+                String[] args = in.split(" ", 3);
                 switch (args[0]) {
+                    case "connect":
+                        if (args.length != 3) break;
+                        if (!Utils.isInt(args[2])) break;
+                        peer.setAddress(args[1]);
+                        peer.setPort(Integer.valueOf(args[2]));
+                        System.out.println("\nThe connection to peer " + peer.getAddress() + ":" + peer.getPort() + " is successfully established.");
+                        System.out.print(">>>");
+                        break;
                     case "send":
                         if (args.length != 2) break;
                         System.out.println("\nMessage recieved from IP: " + peer.getAddress() + ":");
