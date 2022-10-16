@@ -12,10 +12,21 @@ public class PeerHandler implements Runnable {
 
     private boolean run;
     
-    public PeerHandler (Chat chat, Peer peer, Socket peerSocket) throws IOException {
+    /**
+	* Creates a PeerHandler for the given Peer, using a reference
+    * to Chat to allow it to terminate the Peer when the command
+    * is received.
+    * <p>
+    * Runs itself through a thread, can be stopped using the run
+    * variable, through close().
+	*
+	* @param  chat  a Chat object to reference to the chat service
+	* @param  peer  a Peer object of the peer that this is handling
+	*/
+    public PeerHandler (Chat chat, Peer peer) throws IOException {
         this.chat = chat;
         this.peer = peer;
-        this.peerSocket = peerSocket;
+        this.peerSocket = peer.getSocket();
         input = new BufferedReader(new InputStreamReader(this.peerSocket.getInputStream()));
 
         run = true;
@@ -61,6 +72,11 @@ public class PeerHandler implements Runnable {
         }
     }
 
+    /**
+	* Stops the currently running thread by changing the run
+    * variable to false. Also closes the input stream from
+    * the socket.
+	*/
     public void close () {
         run = false;
         try {

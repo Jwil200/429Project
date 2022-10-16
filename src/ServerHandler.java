@@ -7,6 +7,15 @@ public class ServerHandler implements Runnable {
     
     private boolean run;
     
+    /**
+	* Creates a thread to listen for incoming connections
+    * on the given ServerSocket. When a connection is
+    * accepted creates a Peer and adds it to the list of 
+    * connected peers.
+	*
+	* @param  chat  a Chat object to reference to the chat service
+	* @param  listenSocket  a ServerSocket to watch for incoming connections
+	*/
     public ServerHandler (Chat chat, ServerSocket listenSocket) {
         this.chat = chat;
         this.listenSocket = listenSocket;
@@ -26,6 +35,10 @@ public class ServerHandler implements Runnable {
         }
     }
 
+    /**
+	* Stops the currently running thread by changing the run
+    * variable to false.
+	*/
     public void close () {
         run = false;
         try {
