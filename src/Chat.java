@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 public class Chat {
 	public static final int[] DEFAULT_PORTS = {5000, 4554, 4000}; // The default ports used by this program when none are provided.
-	private static final int MAX_CONNECTIONS = 5;
 	private static final int MAX_ATTEMPTS = 4;
 
 	private List<Peer> connectedPeers;
@@ -139,12 +138,6 @@ public class Chat {
 	* @param  destinationPort an int containing the port to connect to for the client
 	*/
 	public void connect(String destination, int destinationPort) {
-		// check if connection limited is exceeded
-		if (connectedPeers.size() >= MAX_CONNECTIONS) {
-			System.out.println("Error: Connect fail, max connections reached.\nTerminate one or more connections to continue.");
-			return;
-		}
-
 		// check for self/duplicate connections
 		if ((destination.equals(ip()) && listenPort == destinationPort) || findPeer(destination, destinationPort) != null) {
 			System.out.println("Error: Connect fail, cannot connect to same ip and port as running host.");
