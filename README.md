@@ -17,13 +17,15 @@ A simple Java based chat application for message exchange among remote peers. Th
 Complete details and contribution information can be found at: https://github.com/Jwil200/429Project
 
 ## Contributions
-Farid
+
+### Farid
 * Researched and implemented the concept of threading which handles server and client at the same time.
 * Set up command for help method
 * Researched and implemented connect and send method
 * Created the list method to display list of connected peers
 * Worked with Jarod to fix errors. 
-Jarod
+
+### Jarod
 * Worked on finalizing the connect method, as well as handlers for servers and peers.
 * Worked on and completed list, terminate, and exit methods.
 * Created a few utilities for the program.
