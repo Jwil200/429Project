@@ -27,37 +27,72 @@ public class Peer {
 
 		try {
 			output = new PrintWriter(this.socket.getOutputStream(), true);
-			handler = new PeerHandler(chat, this, this.socket);
+			handler = new PeerHandler(chat, this);
 		} 
 		catch (Exception e) {
 			System.err.println("Error: Address or Port for connection was invalid.");
 		}
 	}
 
+	/**
+	* Replaces a peer's address with the given address.
+	* 
+	* @param  address  a String of the ip address to switch to
+	*/
 	public void setAddress (String address) {
 		this.address = address;
 	}
 
+	/**
+	* Returns the ip address of this peer.
+	* 
+	* @return  a String containing the ip address of this peer
+	*/
 	public String getAddress () {
 		return address;
 	}
 
+	/**
+	* Replaces a peer's port with the given address.
+	* 
+	* @param  port  an int of the port to switch to
+	*/
 	public void setPort (int port) {
 		this.port = port;
 	}
 
+	/**
+	* Returns the port of this peer.
+	* 
+	* @return  an int containing the port of this peer
+	*/
 	public int getPort () {
 		return port;
 	}
 
+	/**
+	* Returns the Socket object of this peer.
+	* 
+	* @return  the Socket of this peer
+	*/
 	public Socket getSocket () {
 		return socket;
 	}
 
+	/**
+	* Sends a message through this peer connection. This
+	* includes command messages such as connect and terminate.
+	* 
+	* @param  message  a String containing the message to be sent.
+	*/
 	public void send (String message) {
 		output.println(message);
 	}
 
+	/**
+	* Stops the handler for this peer, closes its output stream,
+	* and closes its socket.
+	*/
 	public void close () {
 		handler.close();
 		output.close();

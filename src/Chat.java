@@ -55,6 +55,30 @@ public class Chat {
 		return null;
 	}
 
+	/**
+	* Searches through the peer list for any matching the
+	* given ip and port number, returning the index of
+	* that peer if found.
+	* 
+	* @param  ip  a String of the ip address of the peer
+	* @param  port  an int containing the port number of the peer
+	* 
+	* @return  an int with the index of the peer if found, -1 if not found.
+	*/
+	public int getPeer(String address, int port) {
+		int i = 0;
+		for (Peer p: connectedPeers) {
+			if (p.getAddress().equals(address) && p.getPort() == port)
+				return i;
+			i++;
+		}
+		return -1;
+	}
+
+	/**
+	* Prints a table with a list of commands and
+	* a description for each command.
+	*/
 	public void help () {
 		System.out.printf("%-40s%-20s\n", "Command", "Description");
 		System.out.println(new String(new char[130]).replace("\0", "-")); // Creates line of dashes
@@ -63,6 +87,12 @@ public class Chat {
 		}
 	}
 
+	/**
+	* Gets the ip address of the computer and returns it.
+	* Will return local host on a failure.
+	*
+	* @return 		a String containing the ip of the host process
+	*/
 	private String ip() {
 		try {
 			return Inet4Address.getLocalHost().getHostAddress();
@@ -92,7 +122,8 @@ public class Chat {
 	}
 
 	/**
-	* Prints the port specified upon running the program.
+	* Prints the port that was specified upon execution of
+	* the program.
 	*/
 	public void myport () {
 		System.out.println("The program runs on port number: " + listenPort);
@@ -165,16 +196,12 @@ public class Chat {
 		}
 	}
 
-	public int getPeer(String address, int port) {
-		int i = 0;
-		for (Peer p: connectedPeers) {
-			if (p.getAddress().equals(address) && p.getPort() == port)
-				return i;
-			i++;
-		}
-		return -1;
-	}
-
+	/**
+	* Given a valid index of a peer terminates
+	* the connection with that peer.
+	* 
+	* @param  index  an int of the index of the peer to terminate
+	*/
 	public void terminate (int index) {
 		if (index >= connectedPeers.size() || index < 0) {
 			System.err.println("Error: Invalid id, use list to see the ids of all available connections.");
@@ -190,6 +217,16 @@ public class Chat {
 		connectedPeers.remove(index);
 	}
 
+	/**
+	* Given a valid index of a peer sends a
+	* message to that peer.
+	* <p>
+	* Messages over 100 characters cannot be
+	* sent.
+	* 
+	* @param  index  an int of the index of the peer to send a message to
+	* @param  message  a String containing the message to be sent
+	*/
 	public void send (int index, String message) {
 		if (index >= connectedPeers.size() || index < 0) {
 			System.err.println("Error: Invalid id, use list to see the ids of all available connections.");
@@ -205,6 +242,10 @@ public class Chat {
 		connectedPeers.get(index).send(message);
 	}
 
+	/**
+	* Terminates all connections with all
+	* currently connected peers.
+	*/
 	public void exit () {
 		// Terminate all connections.
 		while (connectedPeers.size() > 0)
